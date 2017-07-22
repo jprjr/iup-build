@@ -1,0 +1,208 @@
+diff --git a/demos/lib/Exm/wml/Makefile.am b/demos/lib/Exm/wml/Makefile.am
+index b7c5f7e..975e04c 100644
+--- a/demos/lib/Exm/wml/Makefile.am
++++ b/demos/lib/Exm/wml/Makefile.am
+@@ -27,7 +27,7 @@ all: Exm.wmd
+ WMDTABLE = Exm.wmd
+ 
+ $(WMDTABLE): wmldbcreate $(TARGETS)
+-	./wmldbcreate -o $@
++	./wmldbcreate-host -o $@
+ 
+ 
+ # INCLUDES = -I. -I$(INCLUDESRC) -I$(MINCLUDESRC) -I$(MLIBSRC) -I../../. -I$(MTOP)/include
+@@ -65,11 +65,11 @@ $(TARGETS):	$(TABLE) $(WMLDIR)/motif.wml
+ # 	$(YACC) -d $(YACCFLAGS) $(UILY)
+ # 	$(MV) y.tab.c UilLexPars.c
+ # 	$(MV) y.tab.h UilLexPars.h
+-	$(top_builddir)/tools/wml/wmluiltok < $(UILY) > tokens.dat
++	$(top_builddir)/tools/wml/wmluiltok-host < $(UILY) > tokens.dat
+ # 	$(RM) wml-uil.mm
+ 	$(RM) Exm.h
+ 	$(LN_S) $(srcdir)/$(TABLE) ./Exm.h
+-	$(CPP) -I$(WMLDIR) Exm.h | $(top_builddir)/tools/wml/wml
++	$(CPP) -I$(WMLDIR) Exm.h | $(top_builddir)/tools/wml/wml-host
+ 	$(RM) Exm.h
+ # 	$(RM) tokens.dat
+ # 
+diff --git a/demos/programs/animate/Makefile.am b/demos/programs/animate/Makefile.am
+index 61d3dd1..b95bf31 100644
+--- a/demos/programs/animate/Makefile.am
++++ b/demos/programs/animate/Makefile.am
+@@ -27,16 +27,16 @@ INCLUDES = -I$(srcdir)/../../../lib \
+ all: dog.uid plane.uid superman.uid xmanimate.uid
+ 
+ dog.uid: dog.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ plane.uid: plane.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ superman.uid: superman.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ xmanimate.uid: xmanimate.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ clean-local:
+ 	$(RM) periodic.uid
+diff --git a/demos/programs/fileview/Makefile.am b/demos/programs/fileview/Makefile.am
+index 2d39ece..856188e 100644
+--- a/demos/programs/fileview/Makefile.am
++++ b/demos/programs/fileview/Makefile.am
+@@ -18,13 +18,13 @@ INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS}
+ all: French.uid German.uid English.uid
+ 
+ French.uid: French.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ German.uid: German.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ English.uid: English.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ clean-local:
+ 	$(RM) French.uid German.uid English.uid
+diff --git a/demos/programs/hellomotif/Makefile.am b/demos/programs/hellomotif/Makefile.am
+index 3ee3074..e7c199e 100644
+--- a/demos/programs/hellomotif/Makefile.am
++++ b/demos/programs/hellomotif/Makefile.am
+@@ -13,7 +13,7 @@ INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS}
+ all: hellomotif.uid
+ 
+ hellomotif.uid: hellomotif.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ clean-local:
+ 	$(RM) hellomotif.uid
+diff --git a/demos/programs/hellomotifi18n/Makefile.am b/demos/programs/hellomotifi18n/Makefile.am
+index 3bb3707..c3e824f 100644
+--- a/demos/programs/hellomotifi18n/Makefile.am
++++ b/demos/programs/hellomotifi18n/Makefile.am
+@@ -17,4 +17,4 @@ LDADD = $(top_builddir)/lib/Mrm/libMrm.la $(top_builddir)/lib/Xm/libXm.la
+ SUFFIXES = .uil .uid
+ 
+ .uil.uid:
+-	$(top_builddir)/clients/uil/uil $< -I$(srcdir) -o $@
++	$(top_builddir)/clients/uil/uil-host $< -I$(srcdir) -o $@
+diff --git a/demos/programs/periodic/Makefile.am b/demos/programs/periodic/Makefile.am
+index bc176ba..553f226 100644
+--- a/demos/programs/periodic/Makefile.am
++++ b/demos/programs/periodic/Makefile.am
+@@ -14,7 +14,7 @@ INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS}
+ all: periodic.uid
+ 
+ periodic.uid: periodic.uil
+-	../../../clients/uil/uil -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
++	../../../clients/uil/uil-host -o $@ $? -I$(srcdir)/../../../clients/uil -I../../../clients/uil
+ 
+ clean-local:
+ 	$(RM) periodic.uid
+diff --git a/demos/unsupported/dogs/Makefile.am b/demos/unsupported/dogs/Makefile.am
+index 8b957aa..faf9127 100644
+--- a/demos/unsupported/dogs/Makefile.am
++++ b/demos/unsupported/dogs/Makefile.am
+@@ -22,6 +22,6 @@ INCLUDES = -I$(srcdir)/../../../lib -I$(top_builddir)/lib ${X_CFLAGS}
+ SUFFIXES = .uil .uid
+ 
+ .uil.uid:
+-	../../../clients/uil/uil $< -I$(srcdir) -o $@
++	../../../clients/uil/uil-host $< -I$(srcdir) -o $@
+ 
+ 
+diff --git a/lib/Xm/Makefile.am b/lib/Xm/Makefile.am
+index f6eb583..898f10e 100644
+--- a/lib/Xm/Makefile.am
++++ b/lib/Xm/Makefile.am
+@@ -289,7 +289,7 @@ $(STRING_FILES): Makefile $(XMSTRING_LIST) XmStrDefs.ht XmStrDefsI.ht XmStrDefs.
+ 	test -f XmStrDefs23.ht || $(LN_S) $(srcdir)/XmStrDefs23.ht XmStrDefs23.ht
+ 	test -f XmStrDefsI.ht || $(LN_S) $(srcdir)/XmStrDefsI.ht XmStrDefsI.ht
+ 	test -f XmStrDefs.ct || $(LN_S) $(srcdir)/XmStrDefs.ct XmStrDefs.ct
+-	$(top_builddir)/config/util/makestrs -f $(XMSTRING_LIST) >XmStrDefs.c
++	$(top_builddir)/config/util/makestrs-host -f $(XMSTRING_LIST) >XmStrDefs.c
+ 
+ if MessageCatalog
+ 
+diff --git a/lib/Xm/Makefile.in b/lib/Xm/Makefile.in
+index 370e274..cc78db7 100644
+--- a/lib/Xm/Makefile.in
++++ b/lib/Xm/Makefile.in
+@@ -1315,7 +1315,7 @@ $(STRING_FILES): Makefile $(XMSTRING_LIST) XmStrDefs.ht XmStrDefsI.ht XmStrDefs.
+ 	test -f XmStrDefs23.ht || $(LN_S) $(srcdir)/XmStrDefs23.ht XmStrDefs23.ht
+ 	test -f XmStrDefsI.ht || $(LN_S) $(srcdir)/XmStrDefsI.ht XmStrDefsI.ht
+ 	test -f XmStrDefs.ct || $(LN_S) $(srcdir)/XmStrDefs.ct XmStrDefs.ct
+-	$(top_builddir)/config/util/makestrs -f $(XMSTRING_LIST) >XmStrDefs.c
++	$(top_builddir)/config/util/makestrs-host -f $(XMSTRING_LIST) >XmStrDefs.c
+ 
+ @MessageCatalog_TRUE@$(CAT_FILES): Xm.msg
+ @MessageCatalog_TRUE@	$(mkinstalldirs) $(top_builddir)/localized/C/msg
+diff --git a/ltmain.sh b/ltmain.sh
+index 0f0a2da..3d76725 100644
+--- a/ltmain.sh
++++ b/ltmain.sh
+@@ -5336,7 +5336,7 @@ func_exec_program_core ()
+         \$ECHO \"$outputname:$output:\$LINENO: newargv[0]: \$progdir\\\\\$program\" 1>&2
+         func_lt_dump_args \${1+\"\$@\"} 1>&2
+       fi
+-      exec \"\$progdir\\\\\$program\" \${1+\"\$@\"}
++      exec \"\$progdir\\\\\$program-host\" \${1+\"\$@\"}
+ "
+     ;;
+ 
+@@ -5346,7 +5346,7 @@ func_exec_program_core ()
+         \$ECHO \"$outputname:$output:\$LINENO: newargv[0]: \$progdir/\$program\" 1>&2
+         func_lt_dump_args \${1+\"\$@\"} 1>&2
+       fi
+-      exec \"\$progdir/\$program\" \${1+\"\$@\"}
++      exec \"\$progdir/\$program-host\" \${1+\"\$@\"}
+ "
+     ;;
+   esac
+diff --git a/tools/wml/Makefile.am b/tools/wml/Makefile.am
+index 8ac0466..0253004 100644
+--- a/tools/wml/Makefile.am
++++ b/tools/wml/Makefile.am
+@@ -55,9 +55,9 @@ $(WMLTARGETS): wml-uil.mm
+ 
+ wml-uil.mm: wmluiltok wml UilLexPars.c $(TABLE)
+ 	$(RM) $(WMLTARGETS) wml.report wml-uil.mm
+-	./wmluiltok <$(srcdir)/Uil.y >tokens.dat
++	./wmluiltok-host <$(srcdir)/Uil.y >tokens.dat
+ 	$(RM) wml-uil.mm
+-	./wml $(srcdir)/$(TABLE)
++	./wml-host $(srcdir)/$(TABLE)
+ 	$(RM) tokens.dat
+ 
+ all: motif.wmd
+diff --git a/tools/wml/Makefile.in b/tools/wml/Makefile.in
+index da4e164..5a8c8e5 100644
+--- a/tools/wml/Makefile.in
++++ b/tools/wml/Makefile.in
+@@ -812,15 +812,15 @@ $(WMLTARGETS): wml-uil.mm
+ 
+ wml-uil.mm: wmluiltok wml UilLexPars.c $(TABLE)
+ 	$(RM) $(WMLTARGETS) wml.report wml-uil.mm
+-	./wmluiltok <$(srcdir)/Uil.y >tokens.dat
++	./wmluiltok-host <$(srcdir)/Uil.y >tokens.dat
+ 	$(RM) wml-uil.mm
+-	./wml $(srcdir)/$(TABLE)
++	./wml-host $(srcdir)/$(TABLE)
+ 	$(RM) tokens.dat
+ 
+ all: motif.wmd
+ 
+ motif.wmd: wmldbcreate
+-	./wmldbcreate -o motif.wmd
++	./wmldbcreate-host -o motif.wmd
+ 
+ clean-local:
+ 	$(RM) $(WMLTARGETS) $(WMDTABLE) $(REPORT) lex.yy.c libwml.a wml \

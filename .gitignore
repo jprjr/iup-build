@@ -1,0 +1,4 @@
+/deps/*
+!/deps/*.sha256sum
+*.a
+*.o

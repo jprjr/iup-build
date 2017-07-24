@@ -2,6 +2,15 @@ mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(dir $(mkfile_path))
 .PHONY: install clean-lua clean-zlib clean-freetype clean-ftgl clean-im clean-cd clean-iup libim-all libcd-all libiup-all
 
+# notes:
+# disabled in linux
+# libcd_pdflib
+# libcdpdf
+# libcdluapdf
+# libiup_mglplot (and lua)
+# libiup_scintilla (and lua)
+# libiupole (and lua)
+
 LUA_VER         ?= 5.3.4
 LUA_SFX         ?=       # if using LuaJIT, set to 'jit'
 ZLIB_VER        ?= 1.2.8
@@ -1052,6 +1061,8 @@ $(LIBEXPAT): $(EXPAT)/.extracted
 	cd "$(EXPAT)" && \
 	./configure \
 	  --prefix="$(X11)/iup_$(TARGET)" \
+	  --enable-static \
+	  --disable-shared \
 	  --host="$(TARGET)"
 	make -C "$(EXPAT)"
 	make -C "$(EXPAT)" install
@@ -1683,15 +1694,15 @@ libim-all: \
 
 libcd-all: \
 	$(LIBCD) \
-	$(LIBCD_PDFLIB) \
-	$(LIBCDPDF) \
 	$(LIBCDGL) \
 	$(LIBCDIM) \
 	$(LIBCDCONTEXTPLUS) \
 	$(LIBCDLUA) \
-	$(LIBCDLUAPDF) \
 	$(LIBCDLUAGL) \
 	$(LIBCDLUACONTEXTPLUS) \
+	$(LIBCD_PDFLIB) \
+	$(LIBCDLUAPDF) \
+	$(LIBCDPDF) \
 	$(LIBCDLUAIM)
 
 libiup-all: \
@@ -1754,11 +1765,8 @@ libiup-all: \
 	$(LIBIUPGLCONTROLS) \
 	$(LIBIUPMATRIXEX) \
 	$(LIBIUP_PLOT) \
-	$(LIBIUP_MGLPLOT) \
-	$(LIBIUP_SCINTILLA) \
 	$(LIBIUPIM) \
 	$(LIBIUPIMGLIB) \
-	$(LIBIUPOLE) \
 	$(LIBIUPTUIO) \
 	$(LIBIUPLUA) \
 	$(LIBIUPLUACD) \
@@ -1767,12 +1775,9 @@ libiup-all: \
 	$(LIBIUPLUAGL) \
 	$(LIBIUPLUAGLCONTROLS) \
 	$(LIBIUPLUA_PLOT) \
-	$(LIBIUPLUA_MGLPLOT) \
-	$(LIBIUPLUA_SCINTILLA) \
 	$(LIBIUPLUAIM) \
 	$(LIBIUPLUAIMGLIB) \
-	$(LIBIUPLUATUIO) \
-	$(LIBIUPLUAOLE)
+	$(LIBIUPLUATUIO)
 endif
 
 zlib: $(LIBZLIB)
@@ -1911,6 +1916,16 @@ install: libim-all libcd-all libiup-all
 	mkdir -p "$(current_dir)/output/$(TARGET)/lib"
 	mkdir -p "$(current_dir)/output/$(TARGET)/include"
 ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
+	cp "$(LIBCD_PDFLIB)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBCDPDF)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBCDLUAPDF)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBIUPOLE)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBIUPLUAOLE)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBIUPLUA_MGLPLOT)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBIUPLUA_SCINTILLA)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBIUP_MGLPLOT)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBIUP_SCINTILLA)" "$(current_dir)/output/$(TARGET)/lib"
+endif
 	cp "$(LIBFREETYPE)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBZLIB)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBFTGL)" "$(current_dir)/output/$(TARGET)/lib"
@@ -1925,13 +1940,10 @@ ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(LIBIMLUA_PROCESS)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIMLUA_FFTW)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCD)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCD_PDFLIB)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDPDF)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDGL)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDIM)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDCONTEXTPLUS)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDLUA)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDLUAPDF)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDLUAGL)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDLUACONTEXTPLUS)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBCDLUAIM)" "$(current_dir)/output/$(TARGET)/lib"
@@ -1942,11 +1954,8 @@ ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(LIBIUPGLCONTROLS)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPMATRIXEX)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUP_PLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUP_MGLPLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUP_SCINTILLA)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPIM)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPIMGLIB)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPOLE)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPTUIO)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUA)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUACD)" "$(current_dir)/output/$(TARGET)/lib"
@@ -1955,17 +1964,19 @@ ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(LIBIUPLUAGL)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUAGLCONTROLS)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUA_PLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUA_MGLPLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUA_SCINTILLA)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUAIM)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUAIMGLIB)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBIUPLUATUIO)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAOLE)" "$(current_dir)/output/$(TARGET)/lib"
 	cp -r "$(FTGL)/include/"* "$(current_dir)/output/$(TARGET)/include/"
 	cp -r "$(ZLIB)/include/"* "$(current_dir)/output/$(TARGET)/include/"
 	cp -r "$(FREETYPE)/include/"* "$(current_dir)/output/$(TARGET)/include/"
 	cp "$(IM)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
 	cp "$(CD)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
 	cp "$(IUP)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
+ifneq (,$(findstring linux,$(TARGET))) #begin linux
+	cp -r "$(X11)/iup_$(TARGET)/lib/"*     "$(current_dir)/output/$(TARGET)/lib"
+	cp -r "$(X11)/iup_$(TARGET)/include/"* "$(current_dir)/output/$(TARGET)/include"
+	rm "$(current_dir)/output/$(TARGET)/lib/"*.la
+	rm -rf "$(current_dir)/output/$(TARGET)/lib/pkgconfig"
 endif
 

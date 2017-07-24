@@ -1047,7 +1047,7 @@ IUP_LIBDIR    = $(IUP)/lib/$(TEC_UNAME)
 IUP_LUALIBDIR = $(IUP)/lib/$(TEC_UNAME)/Lua$(LUA_SFX)
 IUP_INCDIR    = $(IUP)/include
 
-$(LIBEXPAT): $(EXPAT)
+$(LIBEXPAT): $(EXPAT)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(EXPAT)" && \
 	./configure \
@@ -1071,7 +1071,7 @@ $(LIBFONTCONFIG): $(LIBEXPAT) $(LIBFREETYPE) $(FONTCONFIG)/.extracted
 	make -C "$(FONTCONFIG)" V=1
 	make -C "$(FONTCONFIG)" install
 
-$(LIBXTRANS): $(XTRANS)
+$(LIBXTRANS): $(XTRANS)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	rm -f "$(XTRANS)/xtrans.pc"
 	cd "$(XTRANS)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
@@ -1081,42 +1081,42 @@ $(LIBXTRANS): $(XTRANS)
 	mkdir -p "$(X11)/iup_$(TARGET)/lib/pkgconfig"
 	cp "$(XTRANS)/xtrans.pc" "$(X11)/iup_$(TARGET)/lib/pkgconfig/xtrans.pc"
 
-$(LIBXPROTO): $(XPROTO)
+$(LIBXPROTO): $(XPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XPROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(XPROTO)"
 	make -C "$(XPROTO)" install
 
-$(LIBXBITMAPS): $(XBITMAPS)
+$(LIBXBITMAPS): $(XBITMAPS)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XBITMAPS)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(XBITMAPS)"
 	make -C "$(XBITMAPS)" install
 
-$(LIBXEXTPROTO): $(XEXTPROTO)
+$(LIBXEXTPROTO): $(XEXTPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XEXTPROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(XEXTPROTO)"
 	make -C "$(XEXTPROTO)" install
 
-$(LIBGLPROTO): $(GLPROTO)
+$(LIBGLPROTO): $(GLPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(GLPROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(GLPROTO)"
 	make -C "$(GLPROTO)" install
 
-$(LIBDRI2PROTO): $(DRI2PROTO)
+$(LIBDRI2PROTO): $(DRI2PROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(DRI2PROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(DRI2PROTO)"
 	make -C "$(DRI2PROTO)" install
 
-$(LIBDRM_LIB): $(LIBDRM)
+$(LIBDRM_LIB): $(LIBDRM)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(LIBDRM)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1138,7 +1138,7 @@ $(LIBDRM_LIB): $(LIBDRM)
 	make -C "$(LIBDRM)" install
 
 
-$(LIBMESA): $(LIBGLPROTO) $(LIBDRI2PROTO) $(LIBX11_LIB) $(LIBXEXT_LIB) $(LIBDRM_LIB) $(LIBZLIB) $(MESA)
+$(LIBMESA): $(LIBGLPROTO) $(LIBDRI2PROTO) $(LIBX11_LIB) $(LIBXEXT_LIB) $(LIBDRM_LIB) $(LIBZLIB) $(MESA)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(MESA)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1164,7 +1164,7 @@ $(LIBMESA): $(LIBGLPROTO) $(LIBDRI2PROTO) $(LIBX11_LIB) $(LIBXEXT_LIB) $(LIBDRM_
 	make -C "$(MESA)"
 	make -C "$(MESA)" install
 
-$(LIBGLU): $(LIBMESA) $(GLU)
+$(LIBGLU): $(LIBMESA) $(GLU)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(GLU)" && \
 	autoreconf -vfi && \
@@ -1178,28 +1178,28 @@ $(LIBGLU): $(LIBMESA) $(GLU)
 	make -C "$(GLU)" LIBTOOL=slibtool
 	make -C "$(GLU)" LIBTOOL=slibtool install
 
-$(LIBKBPROTO): $(KBPROTO)
+$(LIBKBPROTO): $(KBPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(KBPROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(KBPROTO)"
 	make -C "$(KBPROTO)" install
 
-$(LIBINPUTPROTO): $(INPUTPROTO)
+$(LIBINPUTPROTO): $(INPUTPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(INPUTPROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(INPUTPROTO)"
 	make -C "$(INPUTPROTO)" install
 
-$(LIBRENDERPROTO): $(RENDERPROTO)
+$(LIBRENDERPROTO): $(RENDERPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(RENDERPROTO)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
 	  --host=$(TARGET)
 	make -C "$(RENDERPROTO)"
 	make -C "$(RENDERPROTO)" install
 
-$(LIBXAU_LIB): $(LIBXAU) $(LIBXPROTO)
+$(LIBXAU_LIB): $(LIBXPROTO) $(LIBXAU)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(LIBXAU)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1210,7 +1210,7 @@ $(LIBXAU_LIB): $(LIBXAU) $(LIBXPROTO)
 	make -C "$(LIBXAU)"
 	make -C "$(LIBXAU)" install
 
-$(LIBXEXT_LIB): $(LIBXEXT) $(LIBX11_LIB) $(LIBXEXTPROTO)
+$(LIBXEXT_LIB): $(LIBX11_LIB) $(LIBXEXTPROTO) $(LIBXEXT)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(LIBXEXT)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1223,7 +1223,7 @@ $(LIBXEXT_LIB): $(LIBXEXT) $(LIBX11_LIB) $(LIBXEXTPROTO)
 	make -C "$(LIBXEXT)"
 	make -C "$(LIBXEXT)" install
 
-$(LIBXCB_LIB): $(LIBXCB) $(LIBXAU_LIB)
+$(LIBXCB_LIB): $(LIBXAU_LIB) $(LIBXCB)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(LIBXCB)" && \
 	autoreconf -vfi && \
@@ -1235,7 +1235,7 @@ $(LIBXCB_LIB): $(LIBXCB) $(LIBXAU_LIB)
 	make -C "$(LIBXCB)"
 	make -C "$(LIBXCB)" install
 
-$(LIBX11_LIB): $(LIBXPROTO) $(LIBXTRANS) $(LIBKBPROTO) $(LIBINPUTPROTO) $(LIBXCB_LIB) $(LIBX11)
+$(LIBX11_LIB): $(LIBXPROTO) $(LIBXTRANS) $(LIBKBPROTO) $(LIBINPUTPROTO) $(LIBXCB_LIB) $(LIBX11)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(LIBX11)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1248,7 +1248,7 @@ $(LIBX11_LIB): $(LIBXPROTO) $(LIBXTRANS) $(LIBKBPROTO) $(LIBINPUTPROTO) $(LIBXCB
 	make -C "$(LIBX11)"
 	make -C "$(LIBX11)" install
 
-$(LIBXRENDER): $(LIBX11_LIB) $(LIBRENDERPROTO) $(XRENDER)
+$(LIBXRENDER): $(LIBX11_LIB) $(LIBRENDERPROTO) $(XRENDER)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XRENDER)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1261,7 +1261,7 @@ $(LIBXRENDER): $(LIBX11_LIB) $(LIBRENDERPROTO) $(XRENDER)
 	make -C "$(XRENDER)" V=1
 	make -C "$(XRENDER)" install
 
-$(LIBXT): $(LIBX11_LIB) $(LIBSM) $(XT)
+$(LIBXT): $(LIBX11_LIB) $(LIBSM) $(XT)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XT)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1274,7 +1274,7 @@ $(LIBXT): $(LIBX11_LIB) $(LIBSM) $(XT)
 	make -C "$(XT)" V=1
 	make -C "$(XT)" install
 
-$(LIBICE): $(LIBXPROTO) $(LIBXTRANS) $(ICE)
+$(LIBICE): $(LIBXPROTO) $(LIBXTRANS) $(ICE)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(ICE)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1287,7 +1287,7 @@ $(LIBICE): $(LIBXPROTO) $(LIBXTRANS) $(ICE)
 	make -C "$(ICE)" V=1
 	make -C "$(ICE)" install
 
-$(LIBSM): $(LIBXPROTO) $(LIBXTRANS) $(LIBICE) $(SM)
+$(LIBSM): $(LIBXPROTO) $(LIBXTRANS) $(LIBICE) $(SM)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(SM)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1300,7 +1300,7 @@ $(LIBSM): $(LIBXPROTO) $(LIBXTRANS) $(LIBICE) $(SM)
 	make -C "$(SM)" V=1
 	make -C "$(SM)" install
 
-$(LIBXFT): $(LIBXRENDER) $(LIBFONTCONFIG) $(LIBFREETYPE) $(XFT)
+$(LIBXFT): $(LIBXRENDER) $(LIBFONTCONFIG) $(LIBFREETYPE) $(XFT)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XFT)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1319,7 +1319,7 @@ $(LIBXFT): $(LIBXRENDER) $(LIBFONTCONFIG) $(LIBFREETYPE) $(XFT)
 	make -C "$(XFT)" V=1
 	make -C "$(XFT)" install
 
-$(LIBXPM): $(LIBXT) $(LIBXEXT) $(XPM)
+$(LIBXPM): $(LIBXT) $(LIBXEXT) $(XPM)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XPM)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1332,7 +1332,7 @@ $(LIBXPM): $(LIBXT) $(LIBXEXT) $(XPM)
 	make -C "$(XPM)" V=1
 	make -C "$(XPM)" install
 
-$(LIBXMU): $(LIBXT) $(LIBXEXT_LIB) $(XMU)
+$(LIBXMU): $(LIBXT) $(LIBXEXT_LIB) $(XMU)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XMU)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1345,18 +1345,18 @@ $(LIBXMU): $(LIBXT) $(LIBXEXT_LIB) $(XMU)
 	make -C "$(XMU)" V=1
 	make -C "$(XMU)" install
 
-$(LIBLUA): $(LUA)
+$(LIBLUA): $(LUA)/.extracted
 	rm -rf "$(LUA)/lib/$(TEC_UNAME)"
 	mkdir -p "$(LUA)/lib"
 	cp -r "$(LUA)/src" "$(LUA)/lib/$(TEC_UNAME)"
 	make -C "$(LUA)/lib/$(TEC_UNAME)" CC=$(TARGET_CC) liblua.a
 	$(TARGET_RANLIB) "$(LUA)/lib/$(TEC_UNAME)/liblua.a"
 
-$(LIBZLIB): $(ZLIB)
+$(LIBZLIB): $(ZLIB)/.extracted
 	make -C "$(ZLIB)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) depend
 	make -C "$(ZLIB)/src" $(TECGRAF_BUILD_OPTIONS)
 
-$(LIBFREETYPE): $(FREETYPE)
+$(LIBFREETYPE): $(FREETYPE)/.extracted
 	make -C "$(FREETYPE)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="$(ZLIB)/include" depend
 	make -C "$(FREETYPE)" $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="-I$(ZLIB)/include"
 
@@ -1369,7 +1369,7 @@ $(LIBMOTIF_HOST): $(MOTIF_HOST)/.extracted
 	  --prefix=/usr
 	make -C "$(MOTIF_HOST)"
 
-$(LIBMOTIF): $(LIBXT) $(MOTIF) $(LIBMOTIF_HOST) $(IM) $(LIBJPEG) $(LIBPNG) $(LIBFREETYPE) $(LIBXBITMAPS)
+$(LIBMOTIF): $(LIBXT) $(MOTIF) $(LIBMOTIF_HOST) $(LIBJPEG) $(LIBPNG) $(LIBFREETYPE) $(LIBXBITMAPS) $(IM)/.extracted
 	rm -f $(MOTIF)/clients/uil/uil-host
 	rm -f $(MOTIF)/config/util/makestrs-host
 	rm -f $(MOTIF)/tools/wml/wmluiltok-host
@@ -1428,6 +1428,7 @@ endif
 $(LIBIM): $(LIBZLIB) $(IM)/.extracted
 	make -C "$(IM)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="$(ZLIB)/include" depend
 	make -C "$(IM)/src" $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="-I$(ZLIB)/include" im
+	touch $(LIBIM)
 
 $(LIBIM_JP2): $(LIBIM)
 	make -C "$(IM)/src" $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="-I$(ZLIB)/include" im_jp2
@@ -1464,6 +1465,7 @@ $(LIBCD): $(LIBIM) $(LIBFTGL) $(CD)/.extracted
 endif
 	make -C "$(CD)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) FREETYPE_INC="$(FREETYPE)/include" IM_INC="$(IM)/include" EXTRAINCS="$(ZLIB)/include $(FTGL)/include" depend
 	make -C "$(CD)/src" $(TECGRAF_BUILD_OPTIONS) FREETYPE_INC="$(FREETYPE)/include" IM_INC="$(IM)/include" EXTRAINCS="-I$(ZLIB)/include -I$(FTGL)/include" cd
+	touch $(LIBCD)
 
 $(LIBCD_PDFLIB): $(LIBCD)
 	make -C "$(CD)/src" $(TECGRAF_BUILD_OPTIONS) IM_INC="$(IM)/include" EXTRAINCS="-I$(ZLIB)/include -I$(FREETYPE)/include -I$(FTGL)/include" cd_pdflib
@@ -1513,6 +1515,7 @@ $(LIBIUP): $(LIBCD) $(IUP)/.extracted
 endif
 	make -C "$(IUP)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) IM_INC="$(IM)/include" CD_INC="$(CD)/include" EXTRAINCS="$(ZLIB)/include" depend
 	make -C "$(IUP)/src" $(TECGRAF_BUILD_OPTIONS) IM_INC="$(IM)/include" CD_INC="$(CD)/include" EXTRAINCS="-I$(ZLIB)/include" iup
+	touch $(LIBIUP)
 
 $(LIBIUPCD): $(LIBIUP)
 	make -C "$(IUP)/srccd" $(TECGRAF_BUILD_OPTIONS) IM_INC="$(IM)/include" CD_INC="$(CD)/include" EXTRAINCS="-I$(ZLIB)/include"
@@ -1742,6 +1745,34 @@ libcd-all: \
 	$(LIBCDLUAGL) \
 	$(LIBCDLUACONTEXTPLUS) \
 	$(LIBCDLUAIM)
+
+libiup-all: \
+	$(LIBIUP) \
+	$(LIBIUPCD) \
+	$(LIBIUPCONTROLS) \
+	$(LIBIUPGL) \
+	$(LIBIUPGLCONTROLS) \
+	$(LIBIUPMATRIXEX) \
+	$(LIBIUP_PLOT) \
+	$(LIBIUP_MGLPLOT) \
+	$(LIBIUP_SCINTILLA) \
+	$(LIBIUPIM) \
+	$(LIBIUPIMGLIB) \
+	$(LIBIUPOLE) \
+	$(LIBIUPTUIO) \
+	$(LIBIUPLUA) \
+	$(LIBIUPLUACD) \
+	$(LIBIUPLUACONTROLS) \
+	$(LIBIUPLUAMATRIXEX) \
+	$(LIBIUPLUAGL) \
+	$(LIBIUPLUAGLCONTROLS) \
+	$(LIBIUPLUA_PLOT) \
+	$(LIBIUPLUA_MGLPLOT) \
+	$(LIBIUPLUA_SCINTILLA) \
+	$(LIBIUPLUAIM) \
+	$(LIBIUPLUAIMGLIB) \
+	$(LIBIUPLUATUIO) \
+	$(LIBIUPLUAOLE)
 endif
 
 zlib: $(LIBZLIB)
@@ -1877,9 +1908,9 @@ clean: clean-x11 clean-im clean-cd clean-iup clean-ftgl clean-freetype clean-zli
 dist-clean: dist-clean-x11 dist-clean-im dist-clean-cd dist-clean-iup dist-clean-ftgl dist-clean-freetype dist-clean-zlib dist-clean-lua
 
 install: libim-all libcd-all libiup-all
-ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	mkdir -p "$(current_dir)/output/$(TARGET)/lib"
 	mkdir -p "$(current_dir)/output/$(TARGET)/include"
+ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(LIBFREETYPE)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBZLIB)" "$(current_dir)/output/$(TARGET)/lib"
 	cp "$(LIBFTGL)" "$(current_dir)/output/$(TARGET)/lib"
@@ -1938,4 +1969,3 @@ ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(IUP)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
 endif
 
-test: $(LIBFONTCONFIG)

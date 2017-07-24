@@ -1,0 +1,17 @@
+TARGET = i486-linux-musl
+include ../Makefile
+
+all:
+
+SRC = hello-world.c
+EXE = hello-world
+
+LINUX_INCDIRS = -I$(IUP_INCDIR)
+LINUX_LIBDIRS = -L$(IUP_LIBDIR) -L$(X11_LIBDIR) -L$(ZLIB_LIBDIR) -L$(FREETYPE_LIBDIR)
+LINUX_LIBS = -liup -lXm -lXmu -lXext -lXt -lSM -lICE -lXft -lX11 -lxcb -lXau -lXrender -lfontconfig -lfreetype -lexpat -lz
+
+$(EXE): $(SRC)
+	$(TARGET_CC) -static $(LINUX_INCDIRS) -o $(EXE) $(SRC) $(LINUX_LIBDIRS) $(LINUX_LIBS)
+	$(TARGET_STRIP) $(EXE)
+
+all: $(EXE)

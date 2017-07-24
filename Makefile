@@ -12,6 +12,7 @@ CD_VER          ?= 5.11.1
 IUP_VER         ?= 3.22
 X11_VER         ?= 1.6.5
 XPROTO_VER      ?= 7.0.31
+XBITMAPS_VER    ?= 1.1.1
 XEXTPROTO_VER   ?= 7.3.0
 GLPROTO_VER     ?= 1.4.17
 DRI2PROTO_VER   ?= 2.8
@@ -65,6 +66,7 @@ XTRANS_SITE = $(XORG_SITE)lib
 LIBXAU_SITE = $(XORG_SITE)lib
 LIBXEXT_SITE = $(XORG_SITE)lib
 XPROTO_SITE = $(XORG_SITE)proto
+XBITMAPS_SITE = $(XORG_SITE)data
 XEXTPROTO_SITE = $(XORG_SITE)proto
 GLPROTO_SITE = $(XORG_SITE)proto
 DRI2PROTO_SITE = $(XORG_SITE)proto
@@ -151,6 +153,7 @@ LIBXCB_TARBALL      = $(DEPSDIR)/libxcb-$(LIBXCB_VER).tar.bz2
 LIBXAU_TARBALL      = $(DEPSDIR)/libXau-$(LIBXAU_VER).tar.bz2
 LIBXEXT_TARBALL     = $(DEPSDIR)/libXext-$(LIBXEXT_VER).tar.bz2
 XPROTO_TARBALL      = $(DEPSDIR)/xproto-$(XPROTO_VER).tar.bz2
+XBITMAPS_TARBALL    = $(DEPSDIR)/xbitmaps-$(XBITMAPS_VER).tar.bz2
 XEXTPROTO_TARBALL   = $(DEPSDIR)/xextproto-$(XEXTPROTO_VER).tar.bz2
 GLPROTO_TARBALL     = $(DEPSDIR)/glproto-$(GLPROTO_VER).tar.bz2
 DRI2PROTO_TARBALL   = $(DEPSDIR)/dri2proto-$(DRI2PROTO_VER).tar.bz2
@@ -184,6 +187,7 @@ LIBXCB       := $(DEPSDIR)/libxcb-$(LIBXCB_VER)
 LIBXAU       := $(DEPSDIR)/libXau-$(LIBXAU_VER)
 LIBXEXT      := $(DEPSDIR)/libXext-$(LIBXEXT_VER)
 XPROTO       := $(DEPSDIR)/xproto-$(XPROTO_VER)
+XBITMAPS     := $(DEPSDIR)/xbitmaps-$(XBITMAPS_VER)
 XEXTPROTO    := $(DEPSDIR)/xextproto-$(XEXTPROTO_VER)
 GLPROTO      := $(DEPSDIR)/glproto-$(GLPROTO_VER)
 DRI2PROTO    := $(DEPSDIR)/dri2proto-$(DRI2PROTO_VER)
@@ -205,6 +209,7 @@ XMU          := $(DEPSDIR)/libXmu-$(XMU_VER)
 SM           := $(DEPSDIR)/libSM-$(SM_VER)
 ICE           := $(DEPSDIR)/libICE-$(ICE_VER)
 MOTIF        := $(DEPSDIR)/motif-$(MOTIF_VER)
+MOTIF_HOST   := $(DEPSDIR)/motif-$(MOTIF_VER)-host
 
 define TECGRAF_BUILD_OPTIONS
 	TEC_SYSNAME=$(TEC_SYSNAME) \
@@ -282,6 +287,11 @@ $(XPROTO_TARBALL).done: $(DEPSDIR)/.exists $(XPROTO_TARBALL).sha256sum
 	curl -R -L -o "$(XPROTO_TARBALL)" "$(XPROTO_SITE)/xproto-$(XPROTO_VER).tar.bz2"
 	cd $(DEPSDIR) && sha256sum -c $(XPROTO_TARBALL).sha256sum
 	touch $(XPROTO_TARBALL).done
+
+$(XBITMAPS_TARBALL).done: $(DEPSDIR)/.exists $(XBITMAPS_TARBALL).sha256sum
+	curl -R -L -o "$(XBITMAPS_TARBALL)" "$(XBITMAPS_SITE)/xbitmaps-$(XBITMAPS_VER).tar.bz2"
+	cd $(DEPSDIR) && sha256sum -c $(XBITMAPS_TARBALL).sha256sum
+	touch $(XBITMAPS_TARBALL).done
 
 $(XEXTPROTO_TARBALL).done: $(DEPSDIR)/.exists $(XEXTPROTO_TARBALL).sha256sum
 	curl -R -L -o "$(XEXTPROTO_TARBALL)" "$(XEXTPROTO_SITE)/xextproto-$(XEXTPROTO_VER).tar.bz2"
@@ -503,6 +513,21 @@ $(XPROTO)/.extracted: $(XPROTO_TARBALL).done
 
 $(XPROTO): $(XPROTO)/.extracted
 
+$(XBITMAPS)/.extracted: $(XBITMAPS_TARBALL).done
+	rm -rf "$(XBITMAPS)"
+	mkdir -p "$(XBITMAPS).tmp"
+	tar -xvf "$(XBITMAPS_TARBALL)" --strip 1 -C "$(XBITMAPS).tmp"
+	mv "$(XBITMAPS).tmp" "$(XBITMAPS)"
+	if [ -e $(PATCHDIR)/xbitmaps-$(XBITMAPS_VER) ] ; then \
+		cd "$(XBITMAPS)" && \
+		for p in $(PATCHDIR)/xbitmaps-$(XBITMAPS_VER)/* ; do \
+			patch -p1 < "$${p}" ; \
+		done ; \
+	fi
+	touch "$(XBITMAPS)/.extracted"
+
+$(XBITMAPS): $(XBITMAPS)/.extracted
+
 $(XEXTPROTO)/.extracted: $(XEXTPROTO_TARBALL).done
 	rm -rf "$(XEXTPROTO)"
 	mkdir -p "$(XEXTPROTO).tmp"
@@ -562,6 +587,21 @@ $(MOTIF)/.extracted: $(MOTIF_TARBALL).done
 	touch "$(MOTIF)/.extracted"
 
 $(MOTIF): $(MOTIF)/.extracted
+
+$(MOTIF_HOST)/.extracted: $(MOTIF_TARBALL).done
+	rm -rf "$(MOTIF_HOST)"
+	mkdir -p "$(MOTIF_HOST).tmp"
+	tar -xvf "$(MOTIF_TARBALL)" --strip 1 -C "$(MOTIF_HOST).tmp"
+	mv "$(MOTIF_HOST).tmp" "$(MOTIF_HOST)"
+	if [ -e $(PATCHDIR)/motif-$(MOTIF_VER)-host ] ; then \
+		cd "$(MOTIF_HOST)" && \
+		for p in $(PATCHDIR)/motif-$(MOTIF_VER)-host/* ; do \
+			patch -p1 < "$${p}" ; \
+		done ; \
+	fi
+	touch "$(MOTIF_HOST)/.extracted"
+
+$(MOTIF_HOST): $(MOTIF_HOST)/.extracted
 
 $(KBPROTO)/.extracted: $(KBPROTO_TARBALL).done
 	rm -rf "$(KBPROTO)"
@@ -895,7 +935,12 @@ $(LUA)/.extracted: $(LUA_TARBALL).done
 $(LUA): $(LUA)/.extracted
 
 LIBZLIB        := $(ZLIB)/lib/$(TEC_UNAME)/libz.a
+ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 LIBFREETYPE    := $(FREETYPE)/lib/$(TEC_UNAME)/libfreetype6.a
+endif
+ifneq (,$(findstring linux,$(TARGET))) #begin linux
+LIBFREETYPE    := $(FREETYPE)/lib/$(TEC_UNAME)/libfreetype.a
+endif
 LIBFTGL        := $(FTGL)/lib/$(TEC_UNAME)/libftgl.a
 LIBLUA         := $(LUA)/lib/$(TEC_UNAME)/liblua.a
 LIBX11_LIB     := $(X11)/iup_$(TARGET)/lib/libX11.a
@@ -903,12 +948,13 @@ LIBXCB_LIB     := $(X11)/iup_$(TARGET)/lib/libxcb.a
 LIBXAU_LIB     := $(X11)/iup_$(TARGET)/lib/libXau.a
 LIBXEXT_LIB    := $(X11)/iup_$(TARGET)/lib/libXext.a
 LIBXPROTO      := $(X11)/iup_$(TARGET)/include/X11/keysymdef.h
+LIBXBITMAPS    := $(X11)/iup_$(TARGET)/include/X11/bitmaps/gray
 LIBXEXTPROTO   := $(X11)/iup_$(TARGET)/include/X11/extensions/lbx.h
 LIBGLPROTO     := $(X11)/iup_$(TARGET)/include/GL/glxproto.h
 LIBDRI2PROTO   := $(X11)/iup_$(TARGET)/include/X11/extensions/dri2proto.h
 LIBKBPROTO     := $(X11)/iup_$(TARGET)/include/X11/extensions/XKB.h
 LIBINPUTPROTO  := $(X11)/iup_$(TARGET)/include/X11/extensions/XI.h
-LIBRENDERPROTO  := $(X11)/iup_$(TARGET)/include/X11/extensions/render.h
+LIBRENDERPROTO := $(X11)/iup_$(TARGET)/include/X11/extensions/render.h
 LIBXTRANS      := $(X11)/iup_$(TARGET)/include/X11/Xtrans/Xtrans.h
 LIBMESA        := $(X11)/iup_$(TARGET)/include/GL/gl.h
 LIBGLU         := $(X11)/iup_$(TARGET)/include/GL/glu.h
@@ -921,8 +967,20 @@ LIBXT          := $(X11)/iup_$(TARGET)/lib/libXt.a
 LIBXPM         := $(X11)/iup_$(TARGET)/lib/libXpm.a
 LIBXMU         := $(X11)/iup_$(TARGET)/lib/libXmu.a
 LIBICE         := $(X11)/iup_$(TARGET)/lib/libICE.a
-LIBSM         := $(X11)/iup_$(TARGET)/lib/libSM.a
+LIBSM          := $(X11)/iup_$(TARGET)/lib/libSM.a
+LIBMOTIF_HOST  := $(MOTIF_HOST)/config/util/makestrs
 LIBMOTIF       := $(X11)/iup_$(TARGET)/lib/libXm.a
+LIBPNG         := $(X11)/iup_$(TARGET)/lib/libpng.a
+LIBJPEG        := $(X11)/iup_$(TARGET)/lib/libjpeg.a
+
+ZLIB_INCDIR    := $(ZLIB)/include
+ZLIB_LIBDIR    := $(ZLIB)/lib/$(TEC_UNAME)
+
+FREETYPE_INCDIR    := $(FREETYPE)/include
+FREETYPE_LIBDIR    := $(FREETYPE)/lib/$(TEC_UNAME)
+
+X11_LIBDIR     := $(X11)/iup_$(TARGET)/lib
+X11_INCDIR     := $(X11)/iup_$(TARGET)/include
 
 LUA_LIBDIR     = $(LUA)/lib/$(TEC_UNAME)
 LUA_INCDIR     = $(LUA)/src
@@ -998,7 +1056,7 @@ $(LIBEXPAT): $(EXPAT)
 	make -C "$(EXPAT)"
 	make -C "$(EXPAT)" install
 
-$(LIBFONTCONFIG): $(LIBEXPAT) $(LIBFREETYPE) $(FONTCONFIG)
+$(LIBFONTCONFIG): $(LIBEXPAT) $(LIBFREETYPE) $(FONTCONFIG)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(FONTCONFIG)" && \
 	LDFLAGS="-L$(ZLIB)/lib/$(TEC_UNAME)" \
@@ -1029,6 +1087,13 @@ $(LIBXPROTO): $(XPROTO)
 	  --host=$(TARGET)
 	make -C "$(XPROTO)"
 	make -C "$(XPROTO)" install
+
+$(LIBXBITMAPS): $(XBITMAPS)
+	mkdir -p "$(X11)/iup_$(TARGET)"
+	cd "$(XBITMAPS)" && ./configure --prefix="$(X11)/iup_$(TARGET)" \
+	  --host=$(TARGET)
+	make -C "$(XBITMAPS)"
+	make -C "$(XBITMAPS)" install
 
 $(LIBXEXTPROTO): $(XEXTPROTO)
 	mkdir -p "$(X11)/iup_$(TARGET)"
@@ -1196,7 +1261,7 @@ $(LIBXRENDER): $(LIBX11_LIB) $(LIBRENDERPROTO) $(XRENDER)
 	make -C "$(XRENDER)" V=1
 	make -C "$(XRENDER)" install
 
-$(LIBXT): $(LIBX11_LIB) $(XT)
+$(LIBXT): $(LIBX11_LIB) $(LIBSM) $(XT)
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(XT)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1222,7 +1287,7 @@ $(LIBICE): $(LIBXPROTO) $(LIBXTRANS) $(ICE)
 	make -C "$(ICE)" V=1
 	make -C "$(ICE)" install
 
-$(LIBSM): $(LIBXPROTO) $(LIBXTRANS) $(SM)
+$(LIBSM): $(LIBXPROTO) $(LIBXTRANS) $(LIBICE) $(SM)
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(SM)" && \
 	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1295,11 +1360,44 @@ $(LIBFREETYPE): $(FREETYPE)
 	make -C "$(FREETYPE)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="$(ZLIB)/include" depend
 	make -C "$(FREETYPE)" $(TECGRAF_BUILD_OPTIONS) EXTRAINCS="-I$(ZLIB)/include"
 
-$(LIBMOTIF): $(LIBXT) $(MOTIF)
+$(LIBMOTIF_HOST): $(MOTIF_HOST)/.extracted
+	echo "$(LIBMOTIF_HOST)"
+	stat $(LIBMOTIF_HOST)
+	echo "$(MOTIF_HOST)" && exit 1
+	cd "$(MOTIF_HOST)" && \
+	./configure \
+	  --prefix=/usr
+	make -C "$(MOTIF_HOST)"
+
+$(LIBMOTIF): $(LIBXT) $(MOTIF) $(LIBMOTIF_HOST) $(IM) $(LIBJPEG) $(LIBPNG) $(LIBFREETYPE) $(LIBXBITMAPS)
+	rm -f $(MOTIF)/clients/uil/uil-host
+	rm -f $(MOTIF)/config/util/makestrs-host
+	rm -f $(MOTIF)/tools/wml/wmluiltok-host
+	rm -f $(MOTIF)/tools/wml/wml-host
+	rm -f $(MOTIF)/tools/wml/wmldbcreate-host
+	rm -f $(MOTIF)/demos/lib/Exm/wml/wmldbcreate-host
+	rm -f $(MOTIF)/tools/wml/.libs/lt-wmldbcreate-host
+	rm -f $(MOTIF)/demos/lib/Exm/wml/.libs/lt-wmldbcreate-host
+	rm -f $(MOTIF)/clients/uil/.libs/lt-uil-host
+	mkdir -p $(MOTIF)/tools/wml/.libs
+	mkdir -p $(MOTIF)/demos/lib/Exm/wml/.libs
+	mkdir -p $(MOTIF)/clients/uil/.libs
+	ln -s $(MOTIF_HOST)/clients/uil/uil $(MOTIF)/clients/uil/uil-host
+	ln -s $(MOTIF_HOST)/config/util/makestrs $(MOTIF)/config/util/makestrs-host
+	ln -s $(MOTIF_HOST)/tools/wml/wmluiltok $(MOTIF)/tools/wml/wmluiltok-host
+	ln -s $(MOTIF_HOST)/tools/wml/wml $(MOTIF)/tools/wml/wml-host
+	ln -s $(MOTIF_HOST)/tools/wml/wmldbcreate $(MOTIF)/tools/wml/wmldbcreate-host
+	ln -s $(MOTIF_HOST)/tools/wml/wmldbcreate $(MOTIF)/demos/lib/Exm/wml/wmldbcreate-host
+	ln -s $(MOTIF_HOST)/tools/wml/.libs/lt-wmldbcreate $(MOTIF)/tools/wml/.libs/lt-wmldbcreate-host
+	ln -s $(MOTIF_HOST)/demos/lib/Exm/wml/.libs/lt-wmldbcreate $(MOTIF)/demos/lib/Exm/wml/.libs/lt-wmldbcreate-host
+	ln -s $(MOTIF_HOST)/clients/uil/.libs/lt-uil $(MOTIF)/clients/uil/.libs/lt-uil-host
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(MOTIF)" && \
-	CFLAGS="-I$(X11)/iup_$(TARGET)/include" \
-	LDFLAGS="-L$(X11)/iup_$(TARGET)/lib" \
+	touch NEWS AUTHORS && \
+	autoreconf -vfi && \
+	CFLAGS="-I$(FREETYPE)/include -I$(X11)/iup_$(TARGET)/include" \
+	LDFLAGS="-L$(FREETYPE)/lib/$(TEC_UNAME) -L$(X11)/iup_$(TARGET)/lib" \
+	PKG_CONFIG_LIBDIR="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
 	ac_cv_func_setpgrp_void=yes \
 	./configure \
 	  --host=$(TARGET) \
@@ -1308,10 +1406,13 @@ $(LIBMOTIF): $(LIBXT) $(MOTIF)
 	  --prefix="$(X11)/iup_$(TARGET)" \
 	  --x-includes="$(X11)/iup_$(TARGET)/include" \
 	  --x-libraries="$(X11)/iup_$(TARGET)/lib" \
-	  --disable-build-tests \
-	  --without-motif
-	 make -C "$(MOTIF)"
-	 make -C "$(MOTIF)" install
+	  --with-libpng-includes="$(IM)/src/libpng" \
+	  --with-libpng-lib="$(X11)/iup_$(TARGET)/lib" \
+	  --with-libjpeg-includes="$(IM)/src/libjpeg" \
+	  --with-libjpeg-lib="$(X11)/iup_$(TARGET)/lib" \
+	  --with-freetype-config="$(current_dir)/tools/fake-freetype-config"
+	make -C "$(MOTIF)"
+	make -C "$(MOTIF)" install
 
 #ac_cv_func_setpgrp_void=yes \
 
@@ -1405,7 +1506,7 @@ $(LIBCDLUAIM): $(LIBCDIM) $(LUA)
 	make -C "$(CD)/src" $(TECGRAF_BUILD_OPTIONS) IM_INC="$(IM)/include" EXTRAINCS="-I$(ZLIB)/include -I$(FREETYPE)/include -I$(FTGL)/include" cdluaim5
 
 ifneq (,$(findstring linux,$(TARGET))) #begin linux
-$(LIBIUP): $(LIBCD) $(LIBXPM) $(LIBXMU) $(LIBXEXT) $(LIBXT) $(LIBX11_LIB) $(IUP)/.extracted
+$(LIBIUP): $(LIBCD) $(LIBXPM) $(LIBXMU) $(LIBXEXT) $(LIBXT) $(LIBX11_LIB) $(LIBMOTIF) $(IUP)/.extracted
 endif
 ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 $(LIBIUP): $(LIBCD) $(IUP)/.extracted
@@ -1487,6 +1588,76 @@ $(LIBIUPLUATUIO): $(LIBIUPTUIO) $(LUA)
 
 $(LIBIUPLUAOLE): $(LIBIUPOLE) $(LUA)
 	make -C "$(IUP)/srclua5" $(TECGRAF_BUILD_OPTIONS) IM_INC="$(IM)/include" CD_INC="$(CD)/include" EXTRAINCS="-I$(ZLIB)/include" iupluaole
+
+$(LIBPNG): $(LIBIM)
+	$(TARGET_AR) rvs $(LIBPNG) \
+	  $(IM)/obj/$(TEC_UNAME)/pngerror.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngget.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngmem.o \
+	  $(IM)/obj/$(TEC_UNAME)/png.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngpread.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngread.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngrio.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngrtran.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngrutil.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngset.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngtrans.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngwio.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngwrite.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngwtran.o \
+	  $(IM)/obj/$(TEC_UNAME)/pngwutil.o
+	$(TARGET_RANLIB) $(LIBPNG)
+
+$(LIBJPEG): $(LIBIM)
+	$(TARGET_AR) rvs $(LIBJPEG) \
+	  $(IM)/obj/$(TEC_UNAME)/jcapimin.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcmarker.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdapimin.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdinput.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdtrans.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcapistd.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcmaster.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdapistd.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdmainct.o \
+	  $(IM)/obj/$(TEC_UNAME)/jerror.o \
+	  $(IM)/obj/$(TEC_UNAME)/jmemmgr.o \
+	  $(IM)/obj/$(TEC_UNAME)/jccoefct.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcomapi.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdatadst.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdmarker.o \
+	  $(IM)/obj/$(TEC_UNAME)/jfdctflt.o \
+	  $(IM)/obj/$(TEC_UNAME)/jmemnobs.o \
+	  $(IM)/obj/$(TEC_UNAME)/jccolor.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcparam.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdatasrc.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdmaster.o \
+	  $(IM)/obj/$(TEC_UNAME)/jfdctfst.o \
+	  $(IM)/obj/$(TEC_UNAME)/jquant1.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcdctmgr.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdcoefct.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdmerge.o \
+	  $(IM)/obj/$(TEC_UNAME)/jfdctint.o \
+	  $(IM)/obj/$(TEC_UNAME)/jquant2.o \
+	  $(IM)/obj/$(TEC_UNAME)/jchuff.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcprepct.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdcolor.o \
+	  $(IM)/obj/$(TEC_UNAME)/jidctflt.o \
+	  $(IM)/obj/$(TEC_UNAME)/jutils.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdarith.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcinit.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcsample.o \
+	  $(IM)/obj/$(TEC_UNAME)/jddctmgr.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdpostct.o \
+	  $(IM)/obj/$(TEC_UNAME)/jidctfst.o \
+	  $(IM)/obj/$(TEC_UNAME)/jaricom.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcmainct.o \
+	  $(IM)/obj/$(TEC_UNAME)/jctrans.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdhuff.o \
+	  $(IM)/obj/$(TEC_UNAME)/jdsample.o \
+	  $(IM)/obj/$(TEC_UNAME)/jidctint.o \
+	  $(IM)/obj/$(TEC_UNAME)/jcarith.o
+	$(TARGET_RANLIB) $(LIBJPEG)
+
 
 libim-all:
 
@@ -1766,3 +1937,5 @@ ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(CD)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
 	cp "$(IUP)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
 endif
+
+test: $(LIBFONTCONFIG)

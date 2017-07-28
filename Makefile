@@ -98,7 +98,8 @@ ICE_SITE = $(XORG_SITE)lib
 #MOTIF_SITE = http://downloads.sourceforge.net/lesstif/
 MOTIF_SITE = https://downloads.sourceforge.net/project/motif/Motif%202.3.7%20Source%20Code/
 
-LUA_DLLVER := $(shell echo $(LUA_VER) | cut -f 1-2 -d '.' | sed 's/\.//')
+LUA_MAJVER := $(shell echo $(LUA_VER) | cut -f 1-2 -d '.')
+LUA_DLLVER := $(shell echo $(LUA_MAJVER) | sed 's/\.//')
 
 TARGET_LIBEXT =
 TARGET_EXEEXT =
@@ -190,7 +191,7 @@ FTGL         := $(DEPSDIR)/ftgl-$(FTGL_VER)
 IM           := $(DEPSDIR)/im-$(IM_VER)
 CD           := $(DEPSDIR)/cd-$(CD_VER)
 IUP          := $(DEPSDIR)/iup-$(IUP_VER)
-LUA          := $(DEPSDIR)/lua-$(LUA_VER)
+LUA          := $(DEPSDIR)/lua-$(LUA_VER)-$(TEC_UNAME)
 LIBX11       := $(DEPSDIR)/libX11-$(X11_VER)
 LIBXCB       := $(DEPSDIR)/libxcb-$(LIBXCB_VER)
 LIBXAU       := $(DEPSDIR)/libXau-$(LIBXAU_VER)
@@ -951,7 +952,7 @@ ifneq (,$(findstring linux,$(TARGET))) #begin linux
 LIBFREETYPE    := $(FREETYPE)/lib/$(TEC_UNAME)/libfreetype.a
 endif
 LIBFTGL        := $(FTGL)/lib/$(TEC_UNAME)/libftgl.a
-LIBLUA         := $(LUA)/lib/$(TEC_UNAME)/liblua.a
+LIBLUA         := $(LUA)/lib/$(TEC_UNAME)/lib/liblua.a
 LIBX11_LIB     := $(X11)/iup_$(TARGET)/lib/libX11.a
 LIBXCB_LIB     := $(X11)/iup_$(TARGET)/lib/libxcb.a
 LIBXAU_LIB     := $(X11)/iup_$(TARGET)/lib/libXau.a
@@ -1357,11 +1358,9 @@ $(LIBXMU): $(LIBXT) $(LIBXEXT_LIB) $(XMU)/.extracted
 	make -C "$(XMU)" install
 
 $(LIBLUA): $(LUA)/.extracted
-	rm -rf "$(LUA)/lib/$(TEC_UNAME)"
-	mkdir -p "$(LUA)/lib"
-	cp -r "$(LUA)/src" "$(LUA)/lib/$(TEC_UNAME)"
-	make -C "$(LUA)/lib/$(TEC_UNAME)" CC=$(TARGET_CC) liblua.a
-	$(TARGET_RANLIB) "$(LUA)/lib/$(TEC_UNAME)/liblua.a"
+	make -C "$(LUA)/src" CC=$(TARGET_CC) liblua.a
+	$(TARGET_RANLIB) "$(LUA)/src/liblua.a"
+	make -C "$(LUA)" CC="$(TARGET_CC)" INSTALL_TOP="$(LUA)/lib/$(TEC_UNAME)" TO_BIN="lua.exe luac.exe" mingw install
 
 $(LIBZLIB): $(ZLIB)/.extracted
 	make -C "$(ZLIB)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) depend
@@ -1906,77 +1905,107 @@ clean-iup:
 	rm -rf "$(IUP)/obj/iuplua_scintilla$(LUA_DLLVER)/$(TEC_UNAME)"
 	rm -rf "$(IUP)/obj/iupluatuio$(LUA_DLLVER)/$(TEC_UNAME)"
 
-all: libim-all libcd-all libiup-all
+all: $(LIBFREETYPE) $(LIBFTGL) $(LIBZLIB) $(LIBLUA) libim-all libcd-all libiup-all
 
 clean: clean-x11 clean-im clean-cd clean-iup clean-ftgl clean-freetype clean-zlib clean-lua
 
 dist-clean: dist-clean-x11 dist-clean-im dist-clean-cd dist-clean-iup dist-clean-ftgl dist-clean-freetype dist-clean-zlib dist-clean-lua
 
-install: libim-all libcd-all libiup-all
-	mkdir -p "$(current_dir)/output/$(TARGET)/lib"
-	mkdir -p "$(current_dir)/output/$(TARGET)/include"
+install: all
+	mkdir -p "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/bin"
+	mkdir -p "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/include/lua$(LUA_DLLVER)"
+	mkdir -p "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/include"
+	mkdir -p "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/include"
+	mkdir -p "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/include"
+	mkdir -p "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET)/$(TARGET)/include"
+	mkdir -p "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET)/$(TARGET)/include"
+	mkdir -p "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)/$(TARGET)/lib"
+	mkdir -p "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)/$(TARGET)/include"
 ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
-	cp "$(LIBCD_PDFLIB)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDPDF)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDLUAPDF)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPOLE)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAOLE)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUA_MGLPLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUA_SCINTILLA)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUP_MGLPLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUP_SCINTILLA)" "$(current_dir)/output/$(TARGET)/lib"
+	cp "$(LIBCD_PDFLIB)"        "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBCDPDF)"            "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBCDLUAPDF)"         "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBIUPOLE)"           "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBIUPLUAOLE)"        "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBIUPLUA_MGLPLOT)"   "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBIUPLUA_SCINTILLA)" "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBIUP_MGLPLOT)"      "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBIUP_SCINTILLA)"    "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib"
 endif
-	cp "$(LIBFREETYPE)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBZLIB)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBFTGL)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIM)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIM_JP2)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIM_PROCESS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIM_FFTW)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIM_LZO)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIM_PROCESS_OMP)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIMLUA)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIMLUA_JP2)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIMLUA_PROCESS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIMLUA_FFTW)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCD)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDGL)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDIM)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDCONTEXTPLUS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDLUA)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDLUAGL)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDLUACONTEXTPLUS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBCDLUAIM)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUP)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPCD)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPCONTROLS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPGL)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPGLCONTROLS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPMATRIXEX)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUP_PLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPIM)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPIMGLIB)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPTUIO)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUA)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUACD)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUACONTROLS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAMATRIXEX)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAGL)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAGLCONTROLS)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUA_PLOT)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAIM)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUAIMGLIB)" "$(current_dir)/output/$(TARGET)/lib"
-	cp "$(LIBIUPLUATUIO)" "$(current_dir)/output/$(TARGET)/lib"
-	cp -r "$(FTGL)/include/"* "$(current_dir)/output/$(TARGET)/include/"
-	cp -r "$(ZLIB)/include/"* "$(current_dir)/output/$(TARGET)/include/"
-	cp -r "$(FREETYPE)/include/"* "$(current_dir)/output/$(TARGET)/include/"
-	cp "$(IM)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
-	cp "$(CD)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
-	cp "$(IUP)/include/"*.h "$(current_dir)/output/$(TARGET)/include"
+	cp "$(LIBFREETYPE)" "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBZLIB)" "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBFTGL)" "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBLUA)" "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/lib/liblua$(LUA_DLLVER).a"
+	cp "$(LIBIM)"             "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIM_JP2)"         "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIM_PROCESS)"     "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIM_FFTW)"        "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIM_LZO)"         "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIM_PROCESS_OMP)" "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIMLUA)"          "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIMLUA_JP2)"      "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIMLUA_PROCESS)"  "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIMLUA_FFTW)"     "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCD)"                "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDGL)"              "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDIM)"              "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDCONTEXTPLUS)"     "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDLUA)"             "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDLUAGL)"           "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDLUACONTEXTPLUS)"  "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBCDLUAIM)"           "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUP)"               "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPCD)"             "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPCONTROLS)"       "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPGL)"             "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPGLCONTROLS)"     "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPMATRIXEX)"       "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUP_PLOT)"          "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPIM)"             "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPIMGLIB)"         "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPTUIO)"           "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUA)"            "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUACD)"          "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUACONTROLS)"    "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUAMATRIXEX)"    "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUAGL)"          "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUAGLCONTROLS)"  "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUA_PLOT)"       "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUAIM)"          "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUAIMGLIB)"      "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBIUPLUATUIO)"        "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LUA)/lib/$(TEC_UNAME)/include/"* "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/include/lua$(LUA_DLLVER)/"
+	cp "$(LUA)/lib/$(TEC_UNAME)/bin/lua$(TARGET_EXEEXT)" "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/bin/lua$(LUA_DLLVER)$(TARGET_EXEEXT)"
+	cp "$(LUA)/lib/$(TEC_UNAME)/bin/luac$(TARGET_EXEEXT)" "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/bin/luac$(LUA_DLLVER)$(TARGET_EXEEXT)"
+	cp -r "$(FTGL)/include/"* "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET)/$(TARGET)/include/"
+	cp -r "$(ZLIB)/include/"* "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)/$(TARGET)/include/"
+	cp -r "$(FREETYPE)/include/"* "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET)/$(TARGET)/include/"
+	cp "$(IM)/include/"*.h "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/include"
+	cp "$(CD)/include/"*.h "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)/$(TARGET)/include"
+	cp "$(IUP)/include/"*.h "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)/$(TARGET)/include"
 ifneq (,$(findstring linux,$(TARGET))) #begin linux
-	cp -r "$(X11)/iup_$(TARGET)/lib/"*     "$(current_dir)/output/$(TARGET)/lib"
-	cp -r "$(X11)/iup_$(TARGET)/include/"* "$(current_dir)/output/$(TARGET)/include"
-	rm "$(current_dir)/output/$(TARGET)/lib/"*.la
-	rm -rf "$(current_dir)/output/$(TARGET)/lib/pkgconfig"
+    mkdir -p "$(current_dir)/output/x11-$(TARGET)/$(TARGET)/lib"
+    mkdir -p "$(current_dir)/output/x11-$(TARGET)/$(TARGET)/include"
+	cp -r "$(X11)/iup_$(TARGET)/lib/"*     "$(current_dir)/output/x11-$(TARGET)/$(TARGET)/lib"
+	cp -r "$(X11)/iup_$(TARGET)/include/"* "$(current_dir)/output/x11-$(TARGET)/$(TARGET)/include"
+	rm "$(current_dir)/output/x11-$(TARGET)/$(TARGET)/lib/"*.la
+	rm -rf "$(current_dir)/output/x11-$(TARGET)/$(TARGET)/lib/pkgconfig"
 endif
 
+dist: install
+	tar czf "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)" .
+	tar czf "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET)" .
+	tar czf "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET)" .
+	tar czf "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)" .
+	tar czf "$(current_dir)/output/im-$(IM_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/im-$(IM_VER)-$(TARGET)" .
+	tar czf "$(current_dir)/output/cd-$(CD_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/cd-$(CD_VER)-$(TARGET)" .
+	tar czf "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/iup-$(IUP_VER)-$(TARGET)" .
+ifneq (,$(findstring linux,$(TARGET))) #begin linux
+	tar czf "$(current_dir)/output/x11-$(X11_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/x11-$(X11_VER)-$(TARGET)" .
+endif

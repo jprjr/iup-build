@@ -1008,13 +1008,16 @@ LIBJPEG        := $(X11)/iup_$(TARGET)/lib/libjpeg.a
 
 
 LIBZLIB_DLL      := $(ZLIB)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)z.$(TARGET_DLIBEXT)
+LIBZLIB_DLLA     := $(ZLIB)/lib/$(TEC_UNAME)_dll/libz.dll.a
 ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 LIBFREETYPE_DLL  := $(FREETYPE)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)freetype6.$(TARGET_DLIBEXT)
+LIBFREETYPE_DLLA := $(FREETYPE)/lib/$(TEC_UNAME)_dll/libfreetype6.dll.a
 endif
 ifneq (,$(findstring linux,$(TARGET))) #begin linux
 LIBFREETYPE_DLL  := $(FREETYPE)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)freetype.$(TARGET_DLIBEXT)
 endif
 LIBFTGL_DLL    := $(FTGL)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)ftgl.$(TARGET_DLIBEXT)
+LIBFTGL_DLLA   := $(FTGL)/lib/$(TEC_UNAME)_dll/libftgl.dll.a
 
 ZLIB_INCDIR    := $(ZLIB)/include
 ZLIB_LIBDIR    := $(ZLIB)/lib/$(TEC_UNAME)
@@ -1675,13 +1678,13 @@ $(LIBIM_PROCESS_OMP_DLL): $(LIBIM_DLL) $(LIBIM_PROCESS_OMP)
 $(LIBIMLUA_DLL): $(LIBIM_DLL) $(LIBIMLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIMLUA_DLL) "-Wl,--out-implib,$(IM)/lib/$(TEC_UNAME)_dll/libimlua$(LUA_DLLVER).dll.a" "$(IM)/obj/imlua$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IM)/lib/$(TEC_UNAME)_dll -lim -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIMLUA_JP2_DLL): $(LIBIM_JP2_DLL) $(LIBIMLUA_JP2)
+$(LIBIMLUA_JP2_DLL): $(LIBIM_JP2_DLL) $(LIBIMLUA_DLL) $(LIBIMLUA_JP2)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIMLUA_JP2_DLL) "-Wl,--out-implib,$(IM)/lib/$(TEC_UNAME)_dll/libimlua_jp2$(LUA_DLLVER).dll.a" "$(IM)/obj/imlua_jp2$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IM)/lib/$(TEC_UNAME)_dll -lim_jp2 -limlua$(LUA_DLLVER)
 
-$(LIBIMLUA_PROCESS_DLL): $(LIBIM_PROCESS_DLL) $(LIBIMLUA_PROCESS)
+$(LIBIMLUA_PROCESS_DLL): $(LIBIM_PROCESS_DLL) $(LIBIMLUA_DLL) $(LIBIMLUA_PROCESS)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIMLUA_PROCESS_DLL) "-Wl,--out-implib,$(IM)/lib/$(TEC_UNAME)_dll/libimlua_process$(LUA_DLLVER).dll.a" "$(IM)/obj/imlua_process$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IM)/lib/$(TEC_UNAME)_dll -lim_process -limlua$(LUA_DLLVER) -lim -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIMLUA_FFTW_DLL): $(LIBIM_FFTW_DLL) $(LIBIMLUA_PROCESS_DLL) $(LIBIMLUA_FFTW)
+$(LIBIMLUA_FFTW_DLL): $(LIBIM_FFTW_DLL) $(LIBIMLUA_DLL) $(LIBIMLUA_PROCESS_DLL) $(LIBIMLUA_FFTW)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIMLUA_FFTW_DLL) "-Wl,--out-implib,$(IM)/lib/$(TEC_UNAME)_dll/libimlua_fftw$(LUA_DLLVER).dll.a" "$(IM)/obj/imlua_fftw$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IM)/lib/$(TEC_UNAME)_dll -lim_fftw -lim -limlua_process$(LUA_DLLVER) -limlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
 ifneq (,$(findstring linux,$(TARGET))) #begin linux
@@ -1759,25 +1762,20 @@ $(LIBCDCONTEXTPLUS_DLL): $(LIBCDCONTEXTPLUS) $(LIBCD_DLL)
 	$(TARGET_CXX) -s -shared -static-libgcc -o $(LIBCDCONTEXTPLUS_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdcontextplus.dll.a" "$(CD)/obj/cdcontextplus/$(TEC_UNAME)"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcd -L$(ZLIB)/lib/$(TEC_UNAME)_dll -lz -lgdiplus -lgdi32 -lwinspool -lcomdlg32
 
 
-$(LIBCDLUA_DLL): $(LIBCD_DLL) $(LIBLUA)
-	$(TARGET_CC) -s -shared -o $(LIBCDLUA_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdlua$(LUA_DLLVER).dll.a" "$(CD)/obj/cdlua$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcd -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
+$(LIBCDLUA_DLL): $(LIBCD_DLL) $(LIBCDLUA) $(LIBLUA)
+	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBCDLUA_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdlua$(LUA_DLLVER).dll.a" "$(CD)/obj/cdlua$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcd -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBCDLUAPDF_DLL): $(LIBCDPDF_DLL) $(LIBCD_DLL) $(LIBCDLUAPDF) $(LIBLUA)
+$(LIBCDLUAPDF_DLL): $(LIBCDPDF_DLL) $(LIBCD_DLL) $(LIBCDLUA_DLL) $(LIBCDLUAPDF) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBCDLUAPDF_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdluapdf$(LUA_DLLVER).dll.a" "$(CD)/obj/cdluapdf$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcdpdf -lcdlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBCDLUAGL_DLL): $(LIBCDGL_DLL) $(LIBCD_DLL) $(LIBCDLUAGL) $(LIBLUA)
+$(LIBCDLUAGL_DLL): $(LIBCDGL_DLL) $(LIBCD_DLL) $(LIBCDLUA_DLL) $(LIBCDLUAGL) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBCDLUAGL_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdluagl$(LUA_DLLVER).dll.a" "$(CD)/obj/cdluagl$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcdgl -lcdlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBCDLUACONTEXTPLUS_DLL): $(LIBCDCONTEXTPLUS_DLL) $(LIBCD_DLL) $(LIBCDLUACONTEXTPLUS) $(LIBLUA)
+$(LIBCDLUACONTEXTPLUS_DLL): $(LIBCDCONTEXTPLUS_DLL) $(LIBCD_DLL) $(LIBCDLUA_DLL) $(LIBCDLUACONTEXTPLUS) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBCDLUACONTEXTPLUS_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdluacontextplus$(LUA_DLLVER).dll.a" "$(CD)/obj/cdluacontextplus$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcdcontextplus -lcdlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBCDLUAIM_DLL): $(LIBCDIM_DLL) $(LIBCD_DLL) $(LIBCDLUAIM) $(LIBLUA) $(LIBIMLUA_DLL) $(LIBIM_DLL)
+$(LIBCDLUAIM_DLL): $(LIBCDIM_DLL) $(LIBCD_DLL) $(LIBCDLUA_DLL) $(LIBCDLUAIM) $(LIBLUA) $(LIBIMLUA_DLL) $(LIBIM_DLL)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBCDLUAIM_DLL) "-Wl,--out-implib,$(CD)/lib/$(TEC_UNAME)_dll/libcdluaim$(LUA_DLLVER).dll.a" "$(CD)/obj/cdluaim$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(CD)/lib/$(TEC_UNAME)_dll -lcdim -lcd -lcdlua$(LUA_DLLVER) -L$(IM)/lib/$(TEC_UNAME)_dll -limlua$(LUA_DLLVER) -lim -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
-
-#LIBCDLUAPDF_DLL          := $(CD)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)cdluapdf$(LUAPDF_DLLVER).$(TARGET_DLIBEXT)
-#LIBCDLUAGL_DLL           := $(CD)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)cdluagl$(LUAGL_DLLVER).$(TARGET_DLIBEXT)
-#LIBCDLUACONTEXTPLUS_DLL  := $(CD)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)cdluacontextplus$(LUACONTEXTPLUS_DLLVER).$(TARGET_DLIBEXT)
-#LIBCDLUAIM_DLL           := $(CD)/lib/$(TEC_UNAME)_dll/$(TARGET_DLIBPRE)cdluaim$(LUAIM_DLLVER).$(TARGET_DLIBEXT)
 
 ifneq (,$(findstring linux,$(TARGET))) #begin linux
 $(LIBIUP): $(LIBCD) $(LIBXPM) $(LIBXMU) $(LIBXEXT) $(LIBXT) $(LIBX11_LIB) $(LIBMOTIF) $(IUP)/.extracted
@@ -1880,12 +1878,12 @@ $(LIBIUPCONTROLS_DLL): $(LIBIUPCONTROLS) $(LIBIUP_DLL) $(LIBIUPCD_DLL) $(LIBCD_D
 
 $(LIBIUPGL_DLL): $(LIBIUPGL) $(LIBIUP_DLL)
 	mkdir -p $(IUP)/lib/$(TEC_UNAME)_dll
-	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPGL_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupgl.dll.a" "$(IUP)/obj/iupgl/$(TEC_UNAME)"/*.o -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -lopengl32 -lglu32 -lglaux -lgdi32
+	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPGL_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupgl.dll.a" "$(IUP)/obj/iupgl/$(TEC_UNAME)"/*.o -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -lopengl32 -lglu32 -lgdi32
 
 
 $(LIBIUPGLCONTROLS_DLL): $(LIBIUPGLCONTROLS) $(LIBIUP_DLL) $(LIBFTGL_DLL) $(LIBIUPGL_DLL)
 	mkdir -p $(IUP)/lib/$(TEC_UNAME)_dll
-	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPGLCONTROLS_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupglcontrols.dll.a" "$(IUP)/obj/iupglcontrols/$(TEC_UNAME)"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupgl -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(FTGL)/lib/$(TEC_UNAME)_dll -lftgl -lopengl32 -lglu32 -lglaux -lgdi32
+	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPGLCONTROLS_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupglcontrols.dll.a" "$(IUP)/obj/iupglcontrols/$(TEC_UNAME)"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupgl -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(FTGL)/lib/$(TEC_UNAME)_dll -lftgl -lopengl32 -lglu32 -lgdi32
 
 $(LIBIUPMATRIXEX_DLL): $(LIBIUPMATRIXEX) $(LIBIUP_DLL) $(LIBIUPCONTROLS_DLL)
 	mkdir -p $(IUP)/lib/$(TEC_UNAME)_dll
@@ -1899,7 +1897,7 @@ $(LIBIUP_PLOT_DLL): $(LIBIUP_PLOT) $(LIBIUP_DLL) $(LIBIUPCD_DLL) $(LIBCD_DLL) $(
 
 $(LIBIUP_MGLPLOT_DLL): $(LIBIUP_MGLPLOT) $(LIBIUP_PLOT_DLL) $(LIBIUP_DLL) $(LIBIUPGL_DLL)
 	mkdir -p $(IUP)/lib/$(TEC_UNAME)_dll
-	$(TARGET_CXX) -s -shared -static-libgcc -o $(LIBIUP_MGLPLOT_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiup_mglplot.dll.a" "$(IUP)/obj/iup_mglplot/$(TEC_UNAME)"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liup_plot -liupgl -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -lopengl32 -lglu32 -lglaux
+	$(TARGET_CXX) -s -shared -static-libgcc -o $(LIBIUP_MGLPLOT_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiup_mglplot.dll.a" "$(IUP)/obj/iup_mglplot/$(TEC_UNAME)"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liup_plot -liupgl -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -lopengl32 -lglu32
 
 $(LIBIUP_SCINTILLA_DLL): $(LIBIUP_SCINTILLA) $(LIBIUP_DLL)
 	mkdir -p $(IUP)/lib/$(TEC_UNAME)_dll
@@ -1921,59 +1919,44 @@ $(LIBIUPTUIO_DLL): $(LIBIUPTUIO) $(LIBIUP_DLL)
 	mkdir -p $(IUP)/lib/$(TEC_UNAME)_dll
 	$(TARGET_CXX) -s -shared -static-libgcc -o $(LIBIUPTUIO_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiuptuio.dll.a" "$(IUP)/obj/iuptuio/$(TEC_UNAME)"/*.o -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -lwinmm -lws2_32
 
-$(LIBIUPLUA_DLL): $(LIBIUP_DLL) $(LIBLUA)
-	$(TARGET_CC) -s -shared -o $(LIBIUPLUA_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiuplua$(LUA_DLLVER).dll.a" "$(IUP)/obj/iuplua$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
+$(LIBIUPLUA_DLL): $(LIBIUPLUA) $(LIBIUP_DLL) $(LIBLUA)
+	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUA_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiuplua$(LUA_DLLVER).dll.a" "$(IUP)/obj/iuplua$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
 $(LIBIUPLUACD_DLL): $(LIBIUPCD_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_DLL) $(LIBCDLUA_DLL) $(LIBIUPLUACD) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUACD_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluacd$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluacd$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupcd -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(CD)/lib/$(TEC_UNAME)_dll -lcdlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUACONTROLS_DLL): $(LIBIUPCONTROLS_DLL) $(LIBIUP_DLL) $(LIBCDLUA_DLL) $(LIBIUPLUACONTROLS) $(LIBLUA)
+$(LIBIUPLUACONTROLS_DLL): $(LIBIUPCONTROLS_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_DLL) $(LIBCDLUA_DLL) $(LIBIUPLUACONTROLS) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUACONTROLS_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluacontrols$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluacontrols$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupcontrols -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(CD)/lib/$(TEC_UNAME)_dll -lcdlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUAMATRIXEX_DLL): $(LIBIUPMATRIXEX_DLL) $(LIBIUP_DLL) $(LIBIUPLUAMATRIXEX) $(LIBLUA)
+$(LIBIUPLUAMATRIXEX_DLL): $(LIBIUPMATRIXEX_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_DLL) $(LIBIUPLUAMATRIXEX) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUAMATRIXEX_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluamatrixex$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluamatrixex$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupmatrixex -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
 $(LIBIUPLUAGL_DLL): $(LIBIUPGL_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_DLL) $(LIBIUPLUAGL) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUAGL_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluagl$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluagl$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupgl -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-# MARKER
-
-$(LIBIUPLUAGLCONTROLS_DLL): $(LIBIUPGLCONTROLS_DLL) $(LIBIUP_DLL) $(LIBIUPLUAGLCONTROLS) $(LIBLUA)
+$(LIBIUPLUAGLCONTROLS_DLL): $(LIBIUPGLCONTROLS_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $(LIBIUPLUAGLCONTROLS) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUAGLCONTROLS_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluaglcontrols$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluaglcontrols$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupglcontrols -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUA_PLOT_DLL): $(LIBIUP_PLOT_DLL) $(LIBIUP_DLL) $(LIBCDLUA_DLL) $(LIBIUPLUA_PLOT) $(LIBLUA)
+$(LIBIUPLUA_PLOT_DLL): $(LIBIUP_PLOT_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_DLL) $(LIBCDLUA_DLL) $(LIBIUPLUA_PLOT) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUA_PLOT_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiuplua_plot$(LUA_DLLVER).dll.a" "$(IUP)/obj/iuplua_plot$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liup_plot -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(CD)/lib/$(TEC_UNAME)_dll -lcdlua$(LUA_DLLVER) -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUA_MGLPLOT_DLL): $(LIBIUP_MGLPLOT_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_MGLPLOT) $(LIBLUA)
+$(LIBIUPLUA_MGLPLOT_DLL): $(LIBIUP_MGLPLOT_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_MGLPLOT) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUA_MGLPLOT_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiuplua_mglplot$(LUA_DLLVER).dll.a" "$(IUP)/obj/iuplua_mglplot$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liup_mglplot -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUA_SCINTILLA_DLL): $(LIBIUP_SCINTILLA_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_SCINTILLA) $(LIBLUA)
+$(LIBIUPLUA_SCINTILLA_DLL): $(LIBIUP_SCINTILLA_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $(LIBIUPLUA_SCINTILLA) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUA_SCINTILLA_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiuplua_scintilla$(LUA_DLLVER).dll.a" "$(IUP)/obj/iuplua_scintilla$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liup_scintilla -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUAIM_DLL): $(LIBIUPIM_DLL) $(LIBIUP_DLL) $(LIBIMLUA_DLL) $(LIBIUPLUAIM) $(LIBLUA)
+$(LIBIUPLUAIM_DLL): $(LIBIUPIM_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $(LIBIMLUA_DLL) $(LIBIUPLUAIM) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUAIM_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluaim$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluaim$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupim -liuplua$(LUA_DLLVER) -L$(IM)/lib/$(TEC_UNAME)_dll -limlua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUAIMGLIB_DLL): $(LIBIUPIMGLIB_DLL) $(LIBIUP_DLL) $((LIBIUPLUAIMGLIB) $(LIBLUA)
+$(LIBIUPLUAIMGLIB_DLL): $(LIBIUPIMGLIB_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $((LIBIUPLUAIMGLIB) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUAIMGLIB_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluaimglib$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluaimglib$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupimglib -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUATUIO_DLL): $(LIBIUPTUIO_DLL) $(LIBIUP_DLL) $((LIBIUPLUATUIO) $(LIBLUA)
+$(LIBIUPLUATUIO_DLL): $(LIBIUPTUIO_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $((LIBIUPLUATUIO) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUATUIO_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluatuio$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluatuio$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liuptuio -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
 
-$(LIBIUPLUAOLE_DLL): $(LIBIUPOLE_DLL) $(LIBIUP_DLL) $((LIBIUPLUAOLE) $(LIBLUA)
+$(LIBIUPLUAOLE_DLL): $(LIBIUPOLE_DLL) $(LIBIUPLUA_DLL) $(LIBIUP_DLL) $((LIBIUPLUAOLE) $(LIBLUA)
 	$(TARGET_CC) -s -shared -static-libgcc -o $(LIBIUPLUAOLE_DLL) "-Wl,--out-implib,$(IUP)/lib/$(TEC_UNAME)_dll/libiupluaole$(LUA_DLLVER).dll.a" "$(IUP)/obj/iupluaole$(LUA_DLLVER)/$(TEC_UNAME)/Lua"/*.o -L$(IUP)/lib/$(TEC_UNAME)_dll -liupole -liuplua$(LUA_DLLVER) -L$(IUP_DLL)/lib/$(TEC_UNAME)_dll -liup -L$(LUA)/lib/$(TEC_UNAME)/lib -llua$(LUA_DLLVER)
-#$(LIBIUPLUA_DLL)
-#$(LIBIUPLUACD_DLL)
-#$(LIBIUPLUACONTROLS_DLL)
-#$(LIBIUPLUAMATRIXEX_DLL)
-#$(LIBIUPLUAGL_DLL)
-#$(LIBIUPLUAGLCONTROLS_DLL)
-#$(LIBIUPLUA_PLOT_DLL)
-#$(LIBIUPLUA_MGLPLOT_DLL)
-#$(LIBIUPLUA_SCINTILLA_DLL)
-#$(LIBIUPLUAIM_DLL)
-#$(LIBIUPLUAIMGLIB_DLL)
-#$(LIBIUPLUATUIO_DLL)
-#$(LIBIUPLUAOLE_DLL)
 
 $(LIBPNG): $(LIBIM)
 	$(TARGET_AR) rvs $(LIBPNG) \
@@ -2373,6 +2356,9 @@ install: all
 	mkdir -p "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)/$(TARGET)/include"
 ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
 	cp "$(LIBLUA_DLLA)"         "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET)/$(TARGET)/lib"
+	cp "$(LIBFREETYPE_DLLA)" "$(current_dir)/output/freetype-$(FREETYPE_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBZLIB_DLLA)" "$(current_dir)/output/zlib-$(ZLIB_VER)-$(TARGET)/$(TARGET)/lib/"
+	cp "$(LIBFTGL_DLLA)" "$(current_dir)/output/ftgl-$(FTGL_VER)-$(TARGET)/$(TARGET)/lib/"
 	cp "$(LIBIM_DLLA)"             "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib"
 	cp "$(LIBIM_JP2_DLLA)"         "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib"
 	cp "$(LIBIM_PROCESS_DLLA)"     "$(current_dir)/output/im-$(IM_VER)-$(TARGET)/$(TARGET)/lib"

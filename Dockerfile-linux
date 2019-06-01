@@ -1,10 +1,8 @@
 FROM ubuntu:18.04
 
-FROM ubuntu:18.04
-
 RUN apt-get update && \
     apt-get install -y curl make patch build-essential git pkg-config \
-      autoconf automake m4 python
+      autoconf automake m4 python libtool gperf
 
 RUN mkdir -p /src/iup
 COPY . /src/iup/build
@@ -12,18 +10,18 @@ WORKDIR /src/iup/build
 
 ENV _TARGET x86_64-linux-gnu
 
-#RUN \
-#    make TARGET=${_TARGET} && \
-#    make TARGET=${_TARGET} dist && \
-#    tar xzf output/lua-${_TARGET}.tar.gz -C /usr/local && \
-#    tar xzf output/ftgl-${_TARGET}.tar.gz -C /usr/local && \
-#    tar xzf output/freetype-${_TARGET}.tar.gz -C /usr/local && \
-#    tar xzf output/zlib-${_TARGET}.tar.gz -C /usr/local && \
-#    tar xzf output/im-${_TARGET}.tar.gz -C /usr/local && \
-#    tar xzf output/cd-${_TARGET}.tar.gz -C /usr/local && \
-#    tar xzf output/iup-${_TARGET}.tar.gz -C /usr/local && \
-#    cd / && \
-#    rm -rf /src/iup
-#
-#WORKDIR /
-#
+RUN \
+    make TARGET=${_TARGET} && \
+    make TARGET=${_TARGET} dist && \
+    tar xzf output/lua-${_TARGET}.tar.gz -C /usr/local && \
+    tar xzf output/ftgl-${_TARGET}.tar.gz -C /usr/local && \
+    tar xzf output/freetype-${_TARGET}.tar.gz -C /usr/local && \
+    tar xzf output/zlib-${_TARGET}.tar.gz -C /usr/local && \
+    tar xzf output/im-${_TARGET}.tar.gz -C /usr/local && \
+    tar xzf output/cd-${_TARGET}.tar.gz -C /usr/local && \
+    tar xzf output/iup-${_TARGET}.tar.gz -C /usr/local && \
+    cd / && \
+    rm -rf /src/iup
+
+WORKDIR /
+

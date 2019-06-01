@@ -965,7 +965,7 @@ $(FREETYPE): $(FREETYPE)/.extracted
 $(CD)/.extracted: $(CD_TARBALL).done
 	rm -rf "$(CD)"
 	mkdir -p "$(CD).tmp"
-	tar -xvf "$(CD_TARBALL)" --strip 1 -C "$(CD).tmp"
+	tar -xvf "$(CD_TARBALL)" --strip 1 -C "$(CD).tmp" --exclude "cd/dox"
 	mv "$(CD).tmp" "$(CD)"
 	if [ -e $(PATCHDIR)/cd-$(CD_VER) ] ; then \
 		cd $(CD) && \
@@ -980,7 +980,7 @@ $(CD): $(CD)/.extracted
 $(IM)/.extracted: $(IM_TARBALL).done
 	rm -rf "$(IM)"
 	mkdir -p "$(IM).tmp"
-	tar -xvf "$(IM_TARBALL)" --strip 1 -C "$(IM).tmp"
+	tar -xvf "$(IM_TARBALL)" --strip 1 -C "$(IM).tmp" --exclude "im/dox"
 	mv "$(IM).tmp" "$(IM)"
 	if [ -e $(PATCHDIR)/im-$(IM_VER) ] ; then \
 		cd $(IM) && \
@@ -995,7 +995,7 @@ $(IM): $(IM)/.extracted
 $(IUP)/.extracted: $(IUP_TARBALL).done
 	rm -rf "$(IUP)"
 	mkdir -p "$(IUP).tmp"
-	tar -xvf "$(IUP_TARBALL)" --strip 1 -C "$(IUP).tmp"
+	tar -xvf "$(IUP_TARBALL)" --strip 1 -C "$(IUP).tmp" --exclude "iup/dox"
 	mv "$(IUP).tmp" "$(IUP)"
 	if [ -e $(PATCHDIR)/iup-$(IUP_VER) ] ; then \
 		cd $(IUP) && \
@@ -1230,7 +1230,7 @@ $(LIBDRM_LIB): $(LIBDRM)/.extracted
 	make -C "$(LIBDRM)" install
 
 
-$(LIBMESA): $(LIBGLPROTO) $(LIBDRI2PROTO) $(LIBX11_LIB) $(LIBXEXT_LIB) $(LIBDRM_LIB) $(LIBZLIB) $(MESA)/.extracted
+$(LIBMESA): $(LIBGLPROTO) $(LIBDRI2PROTO) $(LIBX11_LIB) $(LIBXEXT_LIB) $(LIBDRM_LIB) $(LIBZLIB) $(LIBEXPAT) $(MESA)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
 	cd "$(MESA)" && \
 	PKG_CONFIG_PATH="$(X11)/iup_$(TARGET)/lib/pkgconfig" \
@@ -1267,8 +1267,8 @@ $(LIBGLU): $(LIBMESA) $(GLU)/.extracted
 	  --oldincludedir=/dev/null \
 	  --enable-static \
 	  --disable-shared
-	make -C "$(GLU)" LIBTOOL=slibtool
-	make -C "$(GLU)" LIBTOOL=slibtool install
+	make -C "$(GLU)"
+	make -C "$(GLU)" install
 
 $(LIBKBPROTO): $(KBPROTO)/.extracted
 	mkdir -p "$(X11)/iup_$(TARGET)"
@@ -1467,22 +1467,11 @@ $(LIBLUA): $(LUA)/.extracted
 	mkdir -p "$(LUA)/lib/$(TEC_UNAME)/bin"
 	mkdir -p "$(LUA)/lib/$(TEC_UNAME)/lib"
 ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
-	make -C "$(LUA)/src" CC=$(TARGET_CC) LUA_T=lua$(LUA_DLLVER)$(TARGET_EXEEXT) LUA_A=lua$(LUA_DLLVER).$(TARGET_DLIBEXT) SYSCFLAGS="-DLUA_BUILD_AS_DLL" AR="$(TARGET_CC) -static-libgcc -shared -Wl,--out-implib,liblua$(LUA_DLLVER).dll.a -o" RANLIB="$(TARGET_STRIP) --strip-unneeded" lua$(LUA_DLLVER).$(TARGET_DLIBEXT) lua$(LUA_DLLVER)$(TARGET_EXEEXT)
-	cp "$(LUA)/src/liblua$(LUA_DLLVER).dll.a" "$(LUA)/lib/$(TEC_UNAME)/lib"
-	cp "$(LUA)/src/lua$(LUA_DLLVER).$(TARGET_DLIBEXT)" "$(LUA)/lib/$(TEC_UNAME)/lib"
+	make -C "$(LUA)/src" CC="$(TARGET_CC) -static -static-libgcc" LUA_T=lua$(LUA_DLLVER)$(TARGET_EXEEXT) LUAC_T=luac$(LUA_DLLVER)$(TARGET_EXEEXT) LUA_A=liblua$(LUA_DLLVER).a AR="$(TARGET_AR) rcu" RANLIB="$(TARGET_RANLIB)" liblua$(LUA_DLLVER).a luac$(LUA_DLLVER)$(TARGET_EXEEXT) lua$(LUA_DLLVER)$(TARGET_EXEEXT)
 else
-	make -C "$(LUA)/src" CC=$(TARGET_CC) LUA_T=lua$(LUA_DLLVER)$(TARGET_EXEEXT) LUA_A=liblua$(LUA_DLLVER).$(TARGET_DLIBEXT) SYSCFLAGS="-DLUA_BUILD_AS_DLL" AR="$(TARGET_CC) -shared -o" RANLIB="$(TARGET_STRIP) --strip-unneeded" liblua$(LUA_DLLVER).$(TARGET_DLIBEXT) lua$(LUA_DLLVER)$(TARGET_EXEEXT)
-	cp "$(LUA)/src/liblua$(LUA_DLLVER).$(TARGET_DLIBEXT)" "$(LUA)/lib/$(TEC_UNAME)/lib"
+	make -C "$(LUA)/src" CC="$(TARGET_CC)" LUA_T=lua$(LUA_DLLVER)$(TARGET_EXEEXT) LUAC_T=luac$(LUA_DLLVER)$(TARGET_EXEEXT) LUA_A=liblua$(LUA_DLLVER).a AR="$(TARGET_AR) rcu" RANLIB="$(TARGET_RANLIB)" liblua$(LUA_DLLVER).a luac$(LUA_DLLVER)$(TARGET_EXEEXT) lua$(LUA_DLLVER)$(TARGET_EXEEXT)
 endif
-	rm -f "$(LUA)/src/"*.o
-	rm -f "$(LUA)/src/"*.a
-ifneq (,$(findstring mingw32,$(TARGET))) #begin windows
-	make -C "$(LUA)/src" CC="$(TARGET_CC) -static -static-libgcc" LUAC_T=luac$(LUA_DLLVER)$(TARGET_EXEEXT) LUA_A=liblua$(LUA_DLLVER).a AR="$(TARGET_AR) rcu" RANLIB="$(TARGET_RANLIB)" liblua$(LUA_DLLVER).a luac$(LUA_DLLVER)$(TARGET_EXEEXT)
-else
-	make -C "$(LUA)/src" CC="$(TARGET_CC)" LUAC_T=luac$(LUA_DLLVER)$(TARGET_EXEEXT) LUA_A=liblua$(LUA_DLLVER).a AR="$(TARGET_AR) rcu" RANLIB="$(TARGET_RANLIB)" liblua$(LUA_DLLVER).a luac$(LUA_DLLVER)$(TARGET_EXEEXT)
-endif
-	cp "$(LUA)/src/lua$(LUA_DLLVER).$(TARGET_DLIBEXT)" "$(LUA)/lib/$(TEC_UNAME)/lib"
-	make -C "$(LUA)" CC="$(TARGET_CC)" TO_LIB=liblua$(LUA_DLLVER).a INSTALL_TOP="$(LUA)/lib/$(TEC_UNAME)" TO_BIN="lua$(LUA_DLLVER)$(TARGET_EXEEXT) luac$(LUA_DLLVER)$(TARGET_EXEEXT)" install
+	make -C "$(LUA)" CC="$(TARGET_CC)" LUA_T=lua$(LUA_DLLVER)$(TARGET_EXEEXT) LUAC_T=luac$(LUA_DLLVER)$(TARGET_EXEEXT) TO_LIB=liblua$(LUA_DLLVER).a INSTALL_TOP="$(LUA)/lib/$(TEC_UNAME)" TO_BIN="lua$(LUA_DLLVER)$(TARGET_EXEEXT) luac$(LUA_DLLVER)$(TARGET_EXEEXT)" install
 
 $(LIBZLIB): $(ZLIB)/.extracted
 	make -C "$(ZLIB)/src" -f ../tecmake.mak $(TECGRAF_BUILD_OPTIONS) depend
@@ -1845,7 +1834,6 @@ libiup-all: \
 	$(LIBIUPCONTROLS) \
 	$(LIBIUPGL) \
 	$(LIBIUPGLCONTROLS) \
-	$(LIBIUPMATRIXEX) \
 	$(LIBIUP_PLOT) \
 	$(LIBIUP_MGLPLOT) \
 	$(LIBIUP_SCINTILLA) \
@@ -1856,7 +1844,6 @@ libiup-all: \
 	$(LIBIUPLUA) \
 	$(LIBIUPLUACD) \
 	$(LIBIUPLUACONTROLS) \
-	$(LIBIUPLUAMATRIXEX) \
 	$(LIBIUPLUAGL) \
 	$(LIBIUPLUAGLCONTROLS) \
 	$(LIBIUPLUA_PLOT) \
@@ -1897,7 +1884,6 @@ libiup-all: \
 	$(LIBIUPCONTROLS) \
 	$(LIBIUPGL) \
 	$(LIBIUPGLCONTROLS) \
-	$(LIBIUPMATRIXEX) \
 	$(LIBIUP_PLOT) \
 	$(LIBIUPIM) \
 	$(LIBIUPIMGLIB) \
@@ -1905,7 +1891,6 @@ libiup-all: \
 	$(LIBIUPLUA) \
 	$(LIBIUPLUACD) \
 	$(LIBIUPLUACONTROLS) \
-	$(LIBIUPLUAMATRIXEX) \
 	$(LIBIUPLUAGL) \
 	$(LIBIUPLUAGLCONTROLS) \
 	$(LIBIUPLUA_PLOT) \
@@ -2057,6 +2042,7 @@ install: all
 	mkdir -p "$(current_dir)/output/im-$(IM_VER)/$(TARGET)/include"
 	mkdir -p "$(current_dir)/output/cd-$(CD_VER)/$(TARGET)/lib"
 	mkdir -p "$(current_dir)/output/cd-$(CD_VER)/$(TARGET)/include"
+	mkdir -p "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/etc/iup"
 	mkdir -p "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib"
 	mkdir -p "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/include"
 	mkdir -p "$(current_dir)/output/ftgl-$(FTGL_VER)/$(TARGET)/lib"
@@ -2103,7 +2089,6 @@ endif
 	cp "$(LIBIUPCONTROLS)"       "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPGL)"             "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPGLCONTROLS)"     "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
-	cp "$(LIBIUPMATRIXEX)"       "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUP_PLOT)"          "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPIM)"             "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPIMGLIB)"         "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
@@ -2111,7 +2096,6 @@ endif
 	cp "$(LIBIUPLUA)"            "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPLUACD)"          "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPLUACONTROLS)"    "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
-	cp "$(LIBIUPLUAMATRIXEX)"    "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPLUAGL)"          "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPLUAGLCONTROLS)"  "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
 	cp "$(LIBIUPLUA_PLOT)"       "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/lib/"
@@ -2135,6 +2119,7 @@ ifneq (,$(findstring linux,$(TARGET))) #begin linux
 	rm "$(current_dir)/output/x11/$(TARGET)/lib/"*.la
 	rm -rf "$(current_dir)/output/x11/$(TARGET)/lib/pkgconfig"
 endif
+	cp -r "$(IUP)/etc/"*          "$(current_dir)/output/iup-$(IUP_VER)/$(TARGET)/etc/iup/"
 
 dist: install
 	tar czf "$(current_dir)/output/lua-$(LUA_VER)-$(TARGET).tar.gz" -C "$(current_dir)/output/lua-$(LUA_VER)/$(TARGET)" .
